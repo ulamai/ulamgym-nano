@@ -1,0 +1,16 @@
+.git
+.venv
+__pycache__
+*.pyc
+runs
+leaderboards
+outputs
+private
+build
+dist
+*.egg-info
+*.zip
+.pytest_cache
+.env
+*.key
+*.pem

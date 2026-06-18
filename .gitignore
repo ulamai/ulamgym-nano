@@ -1,0 +1,31 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+.venv/
+venv/
+
+# Builds
+build/
+dist/
+*.zip
+
+# Local runs
+runs/
+leaderboards/
+outputs/
+.ulamgym-nano/
+
+# Private challenge material: do not commit hidden tasks or manifests.
+private/*
+!private/README.md
+!private/.gitkeep
+
+# Local secrets
+.env
+*.key
+*.pem

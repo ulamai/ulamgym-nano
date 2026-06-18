@@ -1,0 +1,30 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ulamgym-nano"
+version = "0.1.0"
+description = "A compact public RLVR gym for verifier-backed math tasks."
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "MIT"}
+authors = [{name = "Ulam AI"}]
+keywords = ["rlvr", "reinforcement-learning", "verifier", "math", "benchmark", "gym"]
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "License :: OSI Approved :: MIT License",
+  "Operating System :: OS Independent",
+  "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+dependencies = []
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0.0"]
+server = []
+
+[project.scripts]
+ulamgym-nano = "ulamgym_nano.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
