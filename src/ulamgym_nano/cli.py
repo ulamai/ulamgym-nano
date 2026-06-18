@@ -7,15 +7,25 @@ from pathlib import Path
 from typing import Any, Dict, List
 
 from . import __version__
-from .io import load_task_pack, load_submissions, validate_public_prompt_leakage, write_jsonl, PUBLIC_PROMPTS, VERIFIER_MANIFEST
+from .io import (
+    PUBLIC_PROMPTS,
+    VERIFIER_MANIFEST,
+    load_task_pack,
+    load_taskpack_metadata,
+    validate_public_prompt_leakage,
+    write_jsonl,
+)
 from .leaderboard import build_leaderboard
 from .rlvr import RLVRScorer
 from .schema import PROMPT_SCHEMA_VERSION, VERIFIER_SCHEMA_VERSION
 from .server import serve
 
+DEFAULT_TASK_DIR = "taskpacks/nano-sample-v0.2"
+
 
 def cmd_validate(args: argparse.Namespace) -> int:
     prompts, verifiers = load_task_pack(args.task_dir)
+    metadata = load_taskpack_metadata(args.task_dir)
     warnings = validate_public_prompt_leakage(prompts)
     kinds = {}
     for v in verifiers.values():
@@ -23,9 +33,12 @@ def cmd_validate(args: argparse.Namespace) -> int:
         kinds[kind] = kinds.get(kind, 0) + 1
     print(json.dumps({
         "ok": not warnings or args.allow_warnings,
+        "taskpack_id": metadata.get("taskpack_id") if metadata else None,
+        "taskpack_metadata": bool(metadata),
         "task_count": len(prompts),
         "verifier_kinds": kinds,
         "warnings": warnings,
+        "leaderboard_normalization": "full_task_default",
     }, indent=2, ensure_ascii=False))
     return 0 if (not warnings or args.allow_warnings) else 1
 
@@ -60,8 +73,8 @@ def cmd_score(args: argparse.Namespace) -> int:
 
 
 def cmd_leaderboard(args: argparse.Namespace) -> int:
-    total_tasks = args.total_tasks
-    if args.task_dir and total_tasks is None:
+    total_tasks = None if args.attempted_only else args.total_tasks
+    if args.task_dir and total_tasks is None and not args.attempted_only:
         prompts, _ = load_task_pack(args.task_dir)
         total_tasks = len(prompts)
     rows = build_leaderboard(args.scores, args.out, title=args.title, total_tasks=total_tasks)
@@ -157,27 +170,27 @@ def _append_jsonl(path: Path, row: Dict[str, Any]) -> None:
 
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(prog="ulamgym-nano", description="Compact public RLVR gym for verifier-backed math tasks.")
+    parser = argparse.ArgumentParser(prog="ulamgym-nano", description="Small public RLVR gym for verifier-backed math tasks.")
     parser.add_argument("--version", action="version", version=f"ulamgym-nano {__version__}")
     sub = parser.add_subparsers(dest="cmd", required=True)
 
     p = sub.add_parser("validate", help="Validate a task pack.")
-    p.add_argument("--task-dir", default="data/sample_tasks")
+    p.add_argument("--task-dir", default=DEFAULT_TASK_DIR)
     p.add_argument("--allow-warnings", action="store_true")
     p.set_defaults(func=cmd_validate)
 
     p = sub.add_parser("catalog", help="Print or export public catalog metadata.")
-    p.add_argument("--task-dir", default="data/sample_tasks")
+    p.add_argument("--task-dir", default=DEFAULT_TASK_DIR)
     p.add_argument("--out")
     p.set_defaults(func=cmd_catalog)
 
     p = sub.add_parser("export-prompts", help="Export agent-visible prompt rows.")
-    p.add_argument("--task-dir", default="data/sample_tasks")
+    p.add_argument("--task-dir", default=DEFAULT_TASK_DIR)
     p.add_argument("--out", required=True)
     p.set_defaults(func=cmd_export_prompts)
 
     p = sub.add_parser("score", help="Score submission JSONL against a task pack.")
-    p.add_argument("--task-dir", default="data/sample_tasks")
+    p.add_argument("--task-dir", default=DEFAULT_TASK_DIR)
     p.add_argument("--submissions", required=True)
     p.add_argument("--out", required=True)
     p.set_defaults(func=cmd_score)
@@ -186,12 +199,13 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--scores", required=True)
     p.add_argument("--out", required=True)
     p.add_argument("--title", default="UlamGym Nano Leaderboard")
-    p.add_argument("--task-dir", help="Normalize leaderboard by this task pack's full task count; recommended for competitions.")
+    p.add_argument("--task-dir", default=DEFAULT_TASK_DIR, help="Normalize leaderboard by this task pack's full task count.")
     p.add_argument("--total-tasks", type=int, help="Normalize leaderboard by a fixed full task count; skipped tasks count as zero.")
+    p.add_argument("--attempted-only", action="store_true", help="Use attempted-task denominator for local debugging only.")
     p.set_defaults(func=cmd_leaderboard)
 
     p = sub.add_parser("serve", help="Run a local dependency-free verifier service.")
-    p.add_argument("--task-dir", default="data/sample_tasks")
+    p.add_argument("--task-dir", default=DEFAULT_TASK_DIR)
     p.add_argument("--host", default="127.0.0.1")
     p.add_argument("--port", type=int, default=8000)
     p.set_defaults(func=cmd_serve)
@@ -222,7 +236,7 @@ def build_parser() -> argparse.ArgumentParser:
     p.set_defaults(func=cmd_init_task)
 
     p = sub.add_parser("submission-template", help="Create an empty submission JSONL template.")
-    p.add_argument("--task-dir", default="data/sample_tasks")
+    p.add_argument("--task-dir", default=DEFAULT_TASK_DIR)
     p.add_argument("--out", required=True)
     p.add_argument("--team", default="my-team")
     p.add_argument("--model", default="my-model")

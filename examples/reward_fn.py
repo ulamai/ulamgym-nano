@@ -2,7 +2,7 @@
 
 from ulamgym_nano import RLVRScorer
 
-scorer = RLVRScorer.from_task_dir("data/sample_tasks")
+scorer = RLVRScorer.from_task_dir("taskpacks/nano-sample-v0.2")
 
 
 def reward_fn(task_ids, completions):

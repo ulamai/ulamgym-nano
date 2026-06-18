@@ -1,4 +1,8 @@
-# UlamGym Nano v0.1
+# UlamGym Nano v0.2
+
+[![CI](https://github.com/ulamai/ulamgym-nano/actions/workflows/ci.yml/badge.svg)](https://github.com/ulamai/ulamgym-nano/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)](pyproject.toml)
 
 A compact public RLVR environment where teams can compete to improve models on
 verifier-backed math tasks.
@@ -45,15 +49,15 @@ make smoke
 Inspect the sample catalog:
 
 ```bash
-ulamgym-nano catalog --task-dir data/sample_tasks
+ulamgym-nano catalog --task-dir taskpacks/nano-sample-v0.2
 ```
 
 Score good sample submissions:
 
 ```bash
 ulamgym-nano score \
-  --task-dir data/sample_tasks \
-  --submissions data/sample_tasks/submissions_good.jsonl \
+  --task-dir taskpacks/nano-sample-v0.2 \
+  --submissions taskpacks/nano-sample-v0.2/submissions_good.jsonl \
   --out runs/good_scores.jsonl
 ```
 
@@ -62,16 +66,17 @@ Create a leaderboard:
 ```bash
 ulamgym-nano leaderboard \
   --scores runs/good_scores.jsonl \
-  --task-dir data/sample_tasks \
+  --task-dir taskpacks/nano-sample-v0.2 \
   --out leaderboards/sample.md
 ```
 
-For competitions, pass `--task-dir` or `--total-tasks` to the leaderboard command so skipped tasks count as zero rather than improving a team's average by omission.
+Leaderboards use the full taskpack denominator by default so skipped tasks count
+as zero. Pass `--attempted-only` only for local debugging.
 
 Serve the verifier locally:
 
 ```bash
-ulamgym-nano serve --task-dir data/sample_tasks --host 0.0.0.0 --port 8000
+ulamgym-nano serve --task-dir taskpacks/nano-sample-v0.2 --host 0.0.0.0 --port 8000
 ```
 
 Then call:
@@ -86,8 +91,8 @@ curl http://localhost:8000/v1/catalog
 Build and run:
 
 ```bash
-docker build -t ulamgym-nano:0.1 .
-docker run --rm -p 8000:8000 ulamgym-nano:0.1
+docker build -t ulamgym-nano:0.2 .
+docker run --rm -p 8000:8000 ulamgym-nano:0.2
 ```
 
 Or:
@@ -108,7 +113,8 @@ src/ulamgym_nano/        package code
   cli.py                  command-line interface
   leaderboard.py          score aggregation
 
-data/sample_tasks/        transparent sample task pack
+taskpacks/                standard public taskpack layout
+data/sample_tasks/        legacy transparent sample task pack
 examples/                 reward_fn and agent examples
 docs/                     schema, competition, challenge rules, and task-adding guides
 tests/                    dependency-free tests
@@ -117,11 +123,16 @@ private/                  git-ignored private challenge material
 
 ## Task-pack format
 
-A public task pack has two files:
+A public task pack has these files:
 
 ```text
+taskpack.json              taskpack metadata
 public_prompts.jsonl       agent-visible task rows
 verifier_manifest.jsonl    verifier rows; sample packs may include this publicly
+sample_submissions.jsonl   example submissions
+README.md                  pack overview
+TASK_CARD.md               use, risk, and evaluation notes
+LICENSE.md                 taskpack license terms
 ```
 
 For a real challenge, keep `verifier_manifest.jsonl` private or hosted.
@@ -176,7 +187,7 @@ For a real challenge, keep `verifier_manifest.jsonl` private or hosted.
 ```python
 from ulamgym_nano import RLVRScorer
 
-scorer = RLVRScorer.from_task_dir("data/sample_tasks")
+scorer = RLVRScorer.from_task_dir("taskpacks/nano-sample-v0.2")
 
 # task IDs and completions from your rollout worker
 rewards = scorer.reward_fn(
@@ -210,7 +221,7 @@ Create a new task interactively:
 
 ```bash
 ulamgym-nano init-task \
-  --task-dir data/my_public_pack \
+  --task-dir taskpacks/my_public_pack \
   --task-id my_exact_001 \
   --env exact_answer \
   --domain number_theory \
@@ -224,7 +235,7 @@ ulamgym-nano init-task \
 Validate:
 
 ```bash
-ulamgym-nano validate --task-dir data/my_public_pack
+ulamgym-nano validate --task-dir taskpacks/my_public_pack
 ```
 
 See `docs/ADDING_TASKS.md` for task design guidance.
@@ -253,7 +264,7 @@ For a harder-to-game official challenge:
 ```bash
 git init
 git add .
-git commit -m "Initialize UlamGym Nano v0.1"
+git commit -m "Initialize UlamGym Nano v0.2"
 git branch -M main
 git remote add origin git@github.com:<ORG>/ulamgym-nano.git
 git push -u origin main
@@ -261,6 +272,14 @@ git push -u origin main
 
 ## Current caveat
 
-The included task pack is deliberately tiny and transparent. It proves the
-public RLVR harness works. It is not meant to be a hidden benchmark. Replace or
-extend `data/sample_tasks/` when you provide the actual public challenge tasks.
+## Roadmap and Citation
+
+See `roadmap.md` for the public version plan. If you cite Nano in a report,
+paper, benchmark note, or challenge write-up, use `CITATION.cff` or cite the
+repository URL and release version.
+
+## Current caveat
+
+The included taskpack is deliberately tiny and transparent. It proves the public
+RLVR harness works. It is not meant to be a hidden benchmark. Add or extend
+`taskpacks/` when you provide actual public challenge tasks.

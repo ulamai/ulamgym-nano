@@ -22,19 +22,47 @@ def aggregate_scores(score_rows: Iterable[Mapping[str, Any]], *, total_tasks: in
         model = str(row.get("model", "unknown"))
         run_id = str(row.get("run_id", "default"))
         key = (team, model, run_id)
-        agg = by_key.setdefault(key, {"team": team, "model": model, "run_id": run_id, "tasks": 0, "passed": 0, "total_reward": 0.0})
+        agg = by_key.setdefault(
+            key,
+            {
+                "team": team,
+                "model": model,
+                "run_id": run_id,
+                "tasks": 0,
+                "passed": 0,
+                "total_reward": 0.0,
+                "verifier_families": {},
+            },
+        )
         agg["tasks"] += 1
         agg["passed"] += int(bool(row.get("passed", False)))
         agg["total_reward"] += float(row.get("reward", 0.0))
+        diagnostics = row.get("diagnostics") if isinstance(row.get("diagnostics"), Mapping) else {}
+        family = str(diagnostics.get("verifier_kind") or "unknown")
+        family_agg = agg["verifier_families"].setdefault(family, {"tasks": 0, "passed": 0, "total_reward": 0.0})
+        family_agg["tasks"] += 1
+        family_agg["passed"] += int(bool(row.get("passed", False)))
+        family_agg["total_reward"] += float(row.get("reward", 0.0))
     rows = []
     for agg in by_key.values():
         attempted = max(1, int(agg["tasks"]))
         denom = max(1, int(total_tasks)) if total_tasks else attempted
         pass_denom = denom if total_tasks else attempted
+        verifier_families = {}
+        for family, family_agg in sorted(agg["verifier_families"].items()):
+            family_tasks = max(1, int(family_agg["tasks"]))
+            verifier_families[family] = {
+                "tasks": int(family_agg["tasks"]),
+                "passed": int(family_agg["passed"]),
+                "mean_reward": float(family_agg["total_reward"]) / family_tasks,
+                "pass_at_1": int(family_agg["passed"]) / family_tasks,
+            }
         rows.append({
             **agg,
+            "verifier_families": verifier_families,
             "mean_reward": agg["total_reward"] / denom,
             "pass_rate": agg["passed"] / pass_denom,
+            "pass_at_1": agg["passed"] / pass_denom,
             "attempted_tasks": int(agg["tasks"]),
             "total_tasks": int(total_tasks) if total_tasks else int(agg["tasks"]),
             "coverage": min(1.0, int(agg["tasks"]) / max(1, int(total_tasks))) if total_tasks else 1.0,

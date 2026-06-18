@@ -1,0 +1,16 @@
+{
+  "taskpack_id": "nano-sample-v0.2",
+  "visibility": "public_dev",
+  "license": "generated-public-sample",
+  "intended_use": "local testing, integration tests, and public demos",
+  "not_for": "hidden leaderboard claims or frontier model capability claims",
+  "verifier_visibility": "public",
+  "schema_version": "ulamgym.nano.task.v0.2",
+  "task_count": 5,
+  "verifier_families": [
+    "exact_answer",
+    "json_fields",
+    "multiple_choice",
+    "numeric_interval"
+  ]
+}

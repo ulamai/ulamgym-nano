@@ -3,7 +3,7 @@ set -euo pipefail
 
 git init
 git add .
-git commit -m "Initialize UlamGym Nano v0.1"
+git commit -m "Initialize UlamGym Nano v0.2"
 git branch -M main
 
 echo "Now add your remote:"

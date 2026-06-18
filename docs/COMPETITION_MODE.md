@@ -49,7 +49,7 @@ Cons:
 ## Recommended public release ladder
 
 ```text
-v0.1: public repo + sample tasks + docs + local scoring
+v0.2: public repo + sample taskpack + docs + local scoring
 v0.2: official public dev pack + hosted hidden test pack
 v0.3: monthly public mini-challenge with frozen prompts and private scorer
 ```

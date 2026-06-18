@@ -1,18 +1,19 @@
-# Data Card: UlamGym Nano v0.1 Sample Pack
+# Data Card: UlamGym Nano v0.2 Sample Pack
 
 ## Purpose
 
-`ulamgym-nano-v0.1` is a public technical-preview RLVR gym. It contains a
+`ulamgym-nano-v0.2` is a public technical-preview RLVR gym. It contains a
 compact, transparent sample pack so anyone can run the verifier loop locally.
 The sample pack exists to test integration, task formats, submissions, scoring,
 and leaderboards.
 
 ## Included data
 
-- `data/sample_tasks/public_prompts.jsonl`: agent-visible prompts.
-- `data/sample_tasks/verifier_manifest.jsonl`: sample verifier metadata.
-- `data/sample_tasks/submissions_good.jsonl`: smoke-test submissions.
-- `data/sample_tasks/submissions_bad.jsonl`: negative smoke submissions.
+- `taskpacks/nano-sample-v0.2/taskpack.json`: taskpack metadata.
+- `taskpacks/nano-sample-v0.2/public_prompts.jsonl`: agent-visible prompts.
+- `taskpacks/nano-sample-v0.2/verifier_manifest.jsonl`: sample verifier metadata.
+- `taskpacks/nano-sample-v0.2/submissions_good.jsonl`: smoke-test submissions.
+- `taskpacks/nano-sample-v0.2/submissions_bad.jsonl`: negative smoke submissions.
 
 ## Not included
 

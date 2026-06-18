@@ -1,0 +1,16 @@
+cff-version: 1.2.0
+title: "UlamGym Nano"
+message: "If you use UlamGym Nano, please cite the repository and release version."
+type: software
+authors:
+  - name: "Ulam AI"
+repository-code: "https://github.com/ulamai/ulamgym-nano"
+license: MIT
+version: "0.2.0"
+date-released: "2026-06-18"
+keywords:
+  - RLVR
+  - verifier
+  - math
+  - benchmark
+  - reinforcement learning

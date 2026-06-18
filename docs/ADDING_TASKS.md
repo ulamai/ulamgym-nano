@@ -6,14 +6,28 @@ verifier manifest.
 ## 1. Create a task pack
 
 ```bash
-mkdir -p data/my_pack
+mkdir -p taskpacks/my_pack
+```
+
+Add taskpack metadata:
+
+```json
+{
+  "taskpack_id": "my-pack-v0.2",
+  "visibility": "public_dev",
+  "license": "CC-BY-4.0 or custom",
+  "intended_use": "local testing and public dev",
+  "not_for": "hidden leaderboard claims",
+  "verifier_visibility": "public",
+  "schema_version": "ulamgym.nano.task.v0.2"
+}
 ```
 
 ## 2. Add a task with the CLI
 
 ```bash
 ulamgym-nano init-task \
-  --task-dir data/my_pack \
+  --task-dir taskpacks/my_pack \
   --task-id nt_factor_001 \
   --env exact_answer \
   --domain number_theory \
@@ -27,14 +41,14 @@ ulamgym-nano init-task \
 ## 3. Validate
 
 ```bash
-ulamgym-nano validate --task-dir data/my_pack
+ulamgym-nano validate --task-dir taskpacks/my_pack
 ```
 
 ## 4. Create a submission template
 
 ```bash
 ulamgym-nano submission-template \
-  --task-dir data/my_pack \
+  --task-dir taskpacks/my_pack \
   --out runs/template.jsonl \
   --team my-team \
   --model my-model
@@ -44,7 +58,7 @@ ulamgym-nano submission-template \
 
 ```bash
 ulamgym-nano score \
-  --task-dir data/my_pack \
+  --task-dir taskpacks/my_pack \
   --submissions runs/template.jsonl \
   --out runs/scores.jsonl
 ```

@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "ulamgym-nano"
-version = "0.1.0"
+version = "0.2.0"
 description = "A compact public RLVR gym for verifier-backed math tasks."
 readme = "README.md"
 requires-python = ">=3.10"
@@ -25,6 +25,7 @@ server = []
 
 [project.scripts]
 ulamgym-nano = "ulamgym_nano.cli:main"
+ulamgym-small = "ulamgym_nano.cli:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]

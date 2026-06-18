@@ -6,7 +6,7 @@ from pathlib import Path
 from ulamgym_nano import RLVRScorer
 from ulamgym_nano.io import write_jsonl
 
-scorer = RLVRScorer.from_task_dir("data/sample_tasks")
+scorer = RLVRScorer.from_task_dir("taskpacks/nano-sample-v0.2")
 rows = []
 for task in scorer.prompt_rows():
     rows.append({

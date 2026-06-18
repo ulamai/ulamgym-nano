@@ -1,0 +1,5 @@
+{"schema_version":"ulamgym.nano.submission.v1","team":"baseline","model":"bad","run_id":"bad","task_id":"nano_exact_001","completion":"{\"answer\": \"55\"}"}
+{"schema_version":"ulamgym.nano.submission.v1","team":"baseline","model":"bad","run_id":"bad","task_id":"nano_roots_001","completion":"{\"answer\": [1, 6]}"}
+{"schema_version":"ulamgym.nano.submission.v1","team":"baseline","model":"bad","run_id":"bad","task_id":"nano_interval_001","completion":"{\"answer\": 1.5}"}
+{"schema_version":"ulamgym.nano.submission.v1","team":"baseline","model":"bad","run_id":"bad","task_id":"nano_mc_001","completion":"{\"answer\": \"A\"}"}
+{"schema_version":"ulamgym.nano.submission.v1","team":"baseline","model":"bad","run_id":"bad","task_id":"nano_json_001","completion":"{\"x\": 3, \"y\": 2}"}

@@ -6,11 +6,11 @@ import unittest
 from pathlib import Path
 
 from ulamgym_nano import RLVRScorer, NanoEnv
-from ulamgym_nano.io import load_task_pack, load_submissions, validate_public_prompt_leakage
+from ulamgym_nano.io import load_task_pack, load_submissions, load_taskpack_metadata, validate_public_prompt_leakage
 from ulamgym_nano.leaderboard import aggregate_scores
 
 ROOT = Path(__file__).resolve().parents[1]
-TASK_DIR = ROOT / "data" / "sample_tasks"
+TASK_DIR = ROOT / "taskpacks" / "nano-sample-v0.2"
 
 
 class CoreTests(unittest.TestCase):
@@ -18,6 +18,12 @@ class CoreTests(unittest.TestCase):
         prompts, verifiers = load_task_pack(TASK_DIR)
         self.assertEqual(len(prompts), 5)
         self.assertEqual(set(prompts), set(verifiers))
+
+    def test_load_taskpack_metadata(self):
+        metadata = load_taskpack_metadata(TASK_DIR)
+        self.assertIsNotNone(metadata)
+        self.assertEqual(metadata["taskpack_id"], "nano-sample-v0.2")
+        self.assertEqual(metadata["schema_version"], "ulamgym.nano.task.v0.2")
 
     def test_public_prompt_leakage_only_answer_format_allowed(self):
         prompts, _ = load_task_pack(TASK_DIR)
@@ -61,6 +67,8 @@ class CoreTests(unittest.TestCase):
         self.assertEqual(len(agg), 1)
         self.assertEqual(agg[0]["mean_reward"], 1.0)
         self.assertEqual(agg[0]["pass_rate"], 1.0)
+        self.assertEqual(agg[0]["pass_at_1"], 1.0)
+        self.assertIn("exact_answer", agg[0]["verifier_families"])
 
     def test_leaderboard_full_task_normalization_penalizes_skips(self):
         scorer = RLVRScorer.from_task_dir(TASK_DIR)
@@ -102,8 +110,32 @@ class CLITests(unittest.TestCase):
             lb = d / "leaderboard.md"
             self._run("score", "--task-dir", str(TASK_DIR), "--submissions", str(TASK_DIR / "submissions_good.jsonl"), "--out", str(scores))
             self.assertTrue(scores.exists())
-            self._run("leaderboard", "--scores", str(scores), "--out", str(lb))
+            self._run("leaderboard", "--scores", str(scores), "--task-dir", str(TASK_DIR), "--out", str(lb))
             self.assertIn("baseline", lb.read_text())
+
+    def test_cli_leaderboard_defaults_to_full_task_denominator(self):
+        with tempfile.TemporaryDirectory() as d:
+            d = Path(d)
+            scores = d / "scores.jsonl"
+            lb = d / "leaderboard.json"
+            row = RLVRScorer.from_task_dir(TASK_DIR).score_submission("nano_exact_001", '{"answer":"56"}', team="skip-team").to_dict()
+            scores.write_text(json.dumps(row) + "\n", encoding="utf-8")
+            self._run("leaderboard", "--scores", str(scores), "--out", str(lb))
+            rows = json.loads(lb.read_text())
+            self.assertEqual(rows[0]["mean_reward"], 0.2)
+            self.assertEqual(rows[0]["total_tasks"], 5)
+
+    def test_cli_leaderboard_attempted_only(self):
+        with tempfile.TemporaryDirectory() as d:
+            d = Path(d)
+            scores = d / "scores.jsonl"
+            lb = d / "leaderboard.json"
+            row = RLVRScorer.from_task_dir(TASK_DIR).score_submission("nano_exact_001", '{"answer":"56"}', team="skip-team").to_dict()
+            scores.write_text(json.dumps(row) + "\n", encoding="utf-8")
+            self._run("leaderboard", "--scores", str(scores), "--out", str(lb), "--attempted-only")
+            rows = json.loads(lb.read_text())
+            self.assertEqual(rows[0]["mean_reward"], 1.0)
+            self.assertEqual(rows[0]["total_tasks"], 1)
 
     def test_cli_init_task(self):
         with tempfile.TemporaryDirectory() as d:

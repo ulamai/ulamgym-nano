@@ -7,8 +7,26 @@ UlamGym Nano uses a prompt/manifest split.
 ```text
 public_prompts.jsonl
 verifier_manifest.jsonl
+taskpack.json
+sample_submissions.jsonl
 submissions.jsonl
 scores.jsonl
+```
+
+## Taskpack metadata
+
+`taskpack.json` is optional for legacy packs and recommended for v0.2 taskpacks:
+
+```json
+{
+  "taskpack_id": "nano-sample-v0.2",
+  "visibility": "public_dev",
+  "license": "generated-public-sample",
+  "intended_use": "local testing and public demos",
+  "not_for": "hidden leaderboard claims",
+  "verifier_visibility": "public",
+  "schema_version": "ulamgym.nano.task.v0.2"
+}
 ```
 
 ## Public prompt row
@@ -85,7 +103,7 @@ this hidden or hosted.
 }
 ```
 
-## Supported verifier kinds in v0.1
+## Supported verifier kinds in v0.2
 
 ### `exact_answer`
 

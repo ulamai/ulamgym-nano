@@ -1,0 +1,5 @@
+{"schema_version":"ulamgym.nano.verifier.v1","task_id":"nano_exact_001","verifier":{"kind":"exact_answer","answers":["56"],"normalization":"number","strictness":"strict"}}
+{"schema_version":"ulamgym.nano.verifier.v1","task_id":"nano_roots_001","verifier":{"kind":"exact_answer","answers":[[2,3],[3,2],"2,3","{2,3}"],"normalization":"set","strictness":"strict"}}
+{"schema_version":"ulamgym.nano.verifier.v1","task_id":"nano_interval_001","verifier":{"kind":"numeric_interval","target":"1.41421356237","tolerance":0.001,"strictness":"strict"}}
+{"schema_version":"ulamgym.nano.verifier.v1","task_id":"nano_mc_001","verifier":{"kind":"multiple_choice","correct":"B","choice_count":4,"strictness":"strict"}}
+{"schema_version":"ulamgym.nano.verifier.v1","task_id":"nano_json_001","verifier":{"kind":"json_fields","fields":{"x":{"answers":[2],"normalization":"number"},"y":{"answers":[3],"normalization":"number"}},"strictness":"strict"}}

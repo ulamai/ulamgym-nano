@@ -14,7 +14,7 @@ function.
 ```python
 from ulamgym_nano import RLVRScorer
 
-scorer = RLVRScorer.from_task_dir("data/sample_tasks")
+scorer = RLVRScorer.from_task_dir("taskpacks/nano-sample-v0.2")
 
 def reward_fn(task_ids, completions):
     return scorer.reward_fn(task_ids, completions)
@@ -24,8 +24,8 @@ def reward_fn(task_ids, completions):
 
 ```bash
 ulamgym-nano score \
-  --task-dir data/sample_tasks \
-  --submissions data/sample_tasks/submissions_good.jsonl \
+  --task-dir taskpacks/nano-sample-v0.2 \
+  --submissions taskpacks/nano-sample-v0.2/submissions_good.jsonl \
   --out runs/scores.jsonl
 ```
 
@@ -34,7 +34,7 @@ ulamgym-nano score \
 Run:
 
 ```bash
-ulamgym-nano serve --task-dir data/sample_tasks --port 8000
+ulamgym-nano serve --task-dir taskpacks/nano-sample-v0.2 --port 8000
 ```
 
 Score one completion:
@@ -63,4 +63,4 @@ failed -> reward 0.0
 ```
 
 For future semi-strict tasks, the reward vector can carry dense or expert
-components, but v0.1's bundled sample pack is strict exact-verifier only.
+components, but v0.2's bundled sample taskpack is strict deterministic-verifier only.

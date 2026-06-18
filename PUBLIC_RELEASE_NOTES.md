@@ -1,6 +1,6 @@
 # Public Release Notes
 
-UlamGym Nano v0.1 is meant to be safe to initialize as a public GitHub repo.
+UlamGym Nano v0.2 is meant to be safe to use as a public GitHub repo.
 
 Public by design:
 
@@ -9,6 +9,7 @@ Public by design:
 - tests and CI
 - transparent sample tasks
 - sample verifier manifests for local demos
+- public roadmap, citation metadata, and security reporting guidance
 
 Not public by design:
 

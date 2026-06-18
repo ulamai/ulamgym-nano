@@ -6,6 +6,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from typing import Any, Dict
 from urllib.parse import urlparse
 
+from . import __version__
 from .rlvr import RLVRScorer
 
 
@@ -34,7 +35,7 @@ def make_handler(scorer: RLVRScorer):
         def do_GET(self) -> None:  # noqa: N802
             path = urlparse(self.path).path
             if path == "/health":
-                self._json(200, {"ok": True, "service": "ulamgym-nano", "version": "0.1.0"})
+                self._json(200, {"ok": True, "service": "ulamgym-nano", "version": __version__})
             elif path == "/v1/catalog":
                 self._json(200, {"schema_version": "ulamgym.nano.catalog.v1", "tasks": scorer.catalog()})
             elif path == "/v1/prompts":

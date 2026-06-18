@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import re
 from pathlib import Path
 from typing import Any, Dict, Iterable, Iterator, List, Mapping, Tuple
 
@@ -8,6 +9,24 @@ from .schema import PromptRow, VerifierRow, SubmissionRow
 
 PUBLIC_PROMPTS = "public_prompts.jsonl"
 VERIFIER_MANIFEST = "verifier_manifest.jsonl"
+TASKPACK_METADATA = "taskpack.json"
+
+SUPPORTED_VERIFIER_KINDS = {
+    "exact_answer",
+    "json_fields",
+    "multiple_choice",
+    "numeric_interval",
+}
+
+REQUIRED_TASKPACK_METADATA_KEYS = {
+    "taskpack_id",
+    "visibility",
+    "license",
+    "intended_use",
+    "not_for",
+    "verifier_visibility",
+    "schema_version",
+}
 
 ALLOWED_PUBLIC_KEYS = {"answer_format", "reference_solution_hash", "hidden_holdout"}
 
@@ -23,6 +42,12 @@ HIDDEN_FIELD_HINTS = [
     "hidden",
     "accepted_ids",
     "valid_witness",
+]
+
+ANSWER_BEARING_PATTERNS = [
+    re.compile(r"\banswer\s*(?:is|=|:)", re.IGNORECASE),
+    re.compile(r"\bsolution\s*(?:is|=|:)", re.IGNORECASE),
+    re.compile(r"\bcorrect\s+answer\b", re.IGNORECASE),
 ]
 
 
@@ -81,7 +106,79 @@ def load_task_pack(task_dir: str | Path) -> Tuple[Dict[str, PromptRow], Dict[str
         raise ValueError(f"Missing verifier rows for tasks: {missing}")
     if extra:
         raise ValueError(f"Verifier rows without public prompts: {extra}")
+    errors = validate_task_pack(prompts, verifiers, task_dir=task_dir)
+    if errors:
+        raise ValueError("; ".join(errors))
     return prompts, verifiers
+
+
+def load_taskpack_metadata(task_dir: str | Path) -> Dict[str, Any] | None:
+    path = Path(task_dir) / TASKPACK_METADATA
+    if not path.exists():
+        return None
+    try:
+        obj = json.loads(path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as exc:
+        raise ValueError(f"Invalid taskpack metadata at {path}: {exc}") from exc
+    if not isinstance(obj, dict):
+        raise ValueError(f"Taskpack metadata at {path} must be an object")
+    return obj
+
+
+def validate_task_pack(
+    prompts: Mapping[str, PromptRow],
+    verifiers: Mapping[str, VerifierRow],
+    *,
+    task_dir: str | Path | None = None,
+) -> List[str]:
+    errors: List[str] = []
+    prompt_ids = set(prompts)
+    verifier_ids = set(verifiers)
+
+    missing = sorted(prompt_ids - verifier_ids)
+    extra = sorted(verifier_ids - prompt_ids)
+    if missing:
+        errors.append(f"Missing verifier rows for tasks: {missing}")
+    if extra:
+        errors.append(f"Verifier rows without public prompts: {extra}")
+
+    for task_id, prompt in prompts.items():
+        if not prompt.prompt.strip():
+            errors.append(f"{task_id}: prompt is empty")
+        if not prompt.answer_format.strip():
+            errors.append(f"{task_id}: answer_format is empty")
+        for pattern in ANSWER_BEARING_PATTERNS:
+            if pattern.search(prompt.prompt):
+                errors.append(f"{task_id}: prompt appears to contain an answer-bearing phrase")
+                break
+
+    for task_id, verifier in verifiers.items():
+        kind = str(verifier.verifier.get("kind", ""))
+        if kind not in SUPPORTED_VERIFIER_KINDS:
+            errors.append(f"{task_id}: unsupported verifier.kind {kind!r}")
+        if kind == "exact_answer" and "answers" not in verifier.verifier:
+            errors.append(f"{task_id}: exact_answer verifier missing answers")
+        if kind == "numeric_interval":
+            if "target" not in verifier.verifier:
+                errors.append(f"{task_id}: numeric_interval verifier missing target")
+            if "tolerance" not in verifier.verifier:
+                errors.append(f"{task_id}: numeric_interval verifier missing tolerance")
+        if kind == "multiple_choice":
+            if "correct" not in verifier.verifier:
+                errors.append(f"{task_id}: multiple_choice verifier missing correct")
+            if "choice_count" not in verifier.verifier:
+                errors.append(f"{task_id}: multiple_choice verifier missing choice_count")
+        if kind == "json_fields" and "fields" not in verifier.verifier:
+            errors.append(f"{task_id}: json_fields verifier missing fields")
+
+    if task_dir is not None:
+        metadata = load_taskpack_metadata(task_dir)
+        if metadata is not None:
+            missing_keys = sorted(REQUIRED_TASKPACK_METADATA_KEYS - set(metadata))
+            if missing_keys:
+                errors.append(f"Taskpack metadata missing required keys: {missing_keys}")
+
+    return errors
 
 
 def load_submissions(path: str | Path) -> List[SubmissionRow]:

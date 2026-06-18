@@ -5,7 +5,7 @@ From the repo root:
 ```bash
 git init
 git add .
-git commit -m "Initialize UlamGym Nano v0.1"
+git commit -m "Initialize UlamGym Nano v0.2"
 git branch -M main
 git remote add origin git@github.com:<ORG>/ulamgym-nano.git
 git push -u origin main
